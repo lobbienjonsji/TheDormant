@@ -52,5 +52,21 @@
   "${ModID}:TwoTypesOfDamage": {
     "NAME": "Two Types of Damage",
     "DESCRIPTION": "Deal !D! damage. NL If you're Vulnerable, deal !${ModID}:sd! damage instead."
+  },
+  "${ModID}:Rest": {
+    "NAME": "Suppress",
+    "DESCRIPTION": "Remain Dormant this turn."
+  },
+  "${ModID}:Awake": {
+    "NAME": "Awaken",
+    "DESCRIPTION": "Awaken."
+  },
+  "${ModID}:Whet": {
+    "NAME": "Whet",
+    "DESCRIPTION": "Deal !D! damage."
+  },
+  "${ModID}:SharpClaws": {
+    "NAME": "Sharp Claws",
+    "DESCRIPTION": "Deal !D! damage."
   }
 }

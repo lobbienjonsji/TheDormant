@@ -10,19 +10,32 @@ import com.badlogic.gdx.math.MathUtils;
 import com.evacipated.cardcrawl.mod.stslib.Keyword;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.google.gson.Gson;
+import com.megacrit.cardcrawl.actions.common.DrawCardAction;
+import com.megacrit.cardcrawl.cards.AbstractCard;
+import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.localization.CharacterStrings;
 import com.megacrit.cardcrawl.localization.PowerStrings;
 import com.megacrit.cardcrawl.localization.RelicStrings;
+import com.megacrit.cardcrawl.powers.StrengthPower;
+import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.unlock.UnlockTracker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import theDormant.actions.EasyModalChoiceAction;
+import theDormant.cards.AbstractDormantCard;
 import theDormant.cards.AbstractEasyCard;
+import theDormant.cards.EasyModalChoiceCard;
 import theDormant.cards.cardvars.SecondDamage;
 import theDormant.cards.cardvars.SecondMagicNumber;
+import theDormant.cards.modalChoiceCards.Awake;
+import theDormant.cards.modalChoiceCards.Rest;
 import theDormant.relics.AbstractEasyRelic;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+
+import static theDormant.util.Wiz.*;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 @SpireInitializer
@@ -31,7 +44,9 @@ public class DormantMod implements
         EditRelicsSubscriber,
         EditStringsSubscriber,
         EditKeywordsSubscriber,
-        EditCharactersSubscriber {
+        EditCharactersSubscriber,
+        OnStartBattleSubscriber,
+        OnPlayerTurnStartPostDrawSubscriber{
 
     public static final String modID = "dormantmod";
     
@@ -43,7 +58,10 @@ public class DormantMod implements
     public static Logger logger = LogManager.getLogger(DormantMod.class.getName());
 
     public static Color characterColor = new Color(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1); // This should be changed eventually
-
+    public static Color awokenColor = new Color(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1); // This should be changed eventually
+    
+    
+    
     public static final String SHOULDER1 = modID + "Resources/images/char/mainChar/shoulder.png";
     public static final String SHOULDER2 = modID + "Resources/images/char/mainChar/shoulder2.png";
     public static final String CORPSE = modID + "Resources/images/char/mainChar/corpse.png";
@@ -58,7 +76,17 @@ public class DormantMod implements
     private static final String CARD_ENERGY_L = modID + "Resources/images/1024/energy.png";
     private static final String CHARSELECT_BUTTON = modID + "Resources/images/charSelect/charButton.png";
     private static final String CHARSELECT_PORTRAIT = modID + "Resources/images/charSelect/charBG.png";
-
+    
+    private static final String ATTACK_S_ART_AWOKEN = modID + "Resources/images/512/attackAwoken.png";
+    private static final String SKILL_S_ART_AWOKEN = modID + "Resources/images/512/skillAwoken.png";
+    private static final String POWER_S_ART_AWOKEN = modID + "Resources/images/512/powerAwoken.png";
+    private static final String ATTACK_L_ART_AWOKEN = modID + "Resources/images/1024/attackAwoken.png";
+    private static final String SKILL_L_ART_AWOKEN = modID + "Resources/images/1024/skillAwoken.png";
+    private static final String POWER_L_ART_AWOKEN = modID + "Resources/images/1024/powerAwoken.png";
+    
+    public static boolean IsAwoken = false;
+    public static int TurnCounter = 0;
+    
     public DormantMod() {
         BaseMod.subscribe(this);
 
@@ -66,6 +94,11 @@ public class DormantMod implements
                 characterColor, characterColor, characterColor, characterColor,
                 ATTACK_S_ART, SKILL_S_ART, POWER_S_ART, CARD_ENERGY_S,
                 ATTACK_L_ART, SKILL_L_ART, POWER_L_ART,
+                CARD_ENERGY_L, TEXT_ENERGY);
+        BaseMod.addColor(TheDormant.Enums.AWOKEN_COLOR, awokenColor, awokenColor, awokenColor,
+                awokenColor, awokenColor, awokenColor, awokenColor,
+                ATTACK_S_ART_AWOKEN, SKILL_S_ART_AWOKEN, POWER_S_ART_AWOKEN, CARD_ENERGY_S,
+                ATTACK_L_ART_AWOKEN, SKILL_L_ART_AWOKEN, POWER_L_ART_AWOKEN,
                 CARD_ENERGY_L, TEXT_ENERGY);
     }
 
@@ -148,6 +181,43 @@ public class DormantMod implements
             for (Keyword keyword : keywords) {
                 BaseMod.addKeyword(modID, keyword.PROPER_NAME, keyword.NAMES, keyword.DESCRIPTION);
             }
+        }
+    }
+    
+    @Override
+    public void receiveOnBattleStart(AbstractRoom abstractRoom) {
+        IsAwoken = false;
+        TurnCounter = 0;
+    }
+    
+    @Override
+    public void receiveOnPlayerTurnStartPostDraw() {
+        TurnCounter +=1;
+        boolean hasDormantCard = false;
+        for (AbstractCard card: AbstractDungeon.player.hand.group) {
+            if(card instanceof AbstractDormantCard)
+            {
+                hasDormantCard = true;
+            }
+        }
+        for (AbstractCard card: AbstractDungeon.player.drawPile.group) {
+            if(card instanceof AbstractDormantCard)
+            {
+                hasDormantCard = true;
+            }
+        }
+        for (AbstractCard card: AbstractDungeon.player.discardPile.group) {
+            if(card instanceof AbstractDormantCard)
+            {
+                hasDormantCard = true;
+            }
+        }
+        if(TurnCounter >= 4 && hasDormantCard && !IsAwoken)
+        {
+            ArrayList<AbstractCard> easyCardList = new ArrayList<>();
+            easyCardList.add(new Rest());
+            easyCardList.add(new Awake());
+            atb(new EasyModalChoiceAction(easyCardList));
         }
     }
 }

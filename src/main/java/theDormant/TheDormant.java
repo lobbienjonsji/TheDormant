@@ -174,5 +174,10 @@ public class TheDormant extends CustomPlayer {
         @SpireEnum(name = "DORMANT_COLOR")
         @SuppressWarnings("unused")
         public static CardLibrary.LibraryType LIBRARY_COLOR;
+        @SpireEnum(name = "AWOKEN_COLOR")
+        public static AbstractCard.CardColor AWOKEN_COLOR;
+        @SpireEnum(name = "AWOKEN_COLOR")
+        @SuppressWarnings("unused")
+        public static CardLibrary.LibraryType AWOKEN_LIBRARY_COLOR;
     }
 }
